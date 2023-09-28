@@ -16,7 +16,7 @@ test_sudoku = np.array([["x", "x", 4, "x", 5, "x", "x", "x", "x"],
 
 def check_box(box: np.array, value: int) -> bool:
     """Checks that the value is available for that three by three box"""
-    return all(value not in row for row in box) #TODO verify
+    return all(value not in row for row in box)  # TODO verify
 
 
 def check_line(line: np.array, value: int) -> bool:
@@ -37,7 +37,7 @@ def get_position(x: int) -> int:
 
 
 if __name__ == "__main__":
-    fake = np.empty((9,9))
+    fake = np.empty((9, 9))
     "for every 1-9, check every row"
     for i in range(9):
         for j in range(9):
@@ -48,8 +48,10 @@ if __name__ == "__main__":
                     column = test_sudoku[:, j]
                     i_start_pos = get_position(i)
                     j_start_pos = get_position(j)
-                    box = test_sudoku[i_start_pos: i_start_pos + 3, j_start_pos: j_start_pos + 3]
+                    box = test_sudoku[i_start_pos: i_start_pos +
+                                      3, j_start_pos: j_start_pos + 3]
                     if check_all_conditions(row, column, box, possible_value):
                         possible_values.append(possible_value)
-                fake[i, j] = possible_values # TODO solve numpy issue
+                if len(possible_values) == 1:
+                    fake[i, j] = possible_values[0]
     print(fake)
