@@ -39,19 +39,30 @@ def get_position(x: int) -> int:
 if __name__ == "__main__":
     fake = np.empty((9, 9))
     "for every 1-9, check every row"
-    for i in range(9):
-        for j in range(9):
-            possible_values = []
-            if test_sudoku[i, j-1] == "x":
-                for possible_value in range(1, 10):
-                    row = test_sudoku[i, :]
-                    column = test_sudoku[:, j]
-                    i_start_pos = get_position(i)
-                    j_start_pos = get_position(j)
-                    box = test_sudoku[i_start_pos: i_start_pos +
-                                      3, j_start_pos: j_start_pos + 3]
-                    if check_all_conditions(row, column, box, possible_value):
-                        possible_values.append(possible_value)
-                if len(possible_values) == 1:
-                    fake[i, j] = possible_values[0]
-    print(fake)
+    loop = True
+    while loop:
+        loop = False
+        # print(test_sudoku)
+        print(fake)
+        print()
+        for i in range(9):
+            for j in range(9):
+                possible_values = []
+                if test_sudoku[i, j] == "x":
+                    for possible_value in range(1, 10):
+                        row = test_sudoku[i, :]
+                        column = test_sudoku[:, j]
+                        i_start_pos = get_position(i)
+                        j_start_pos = get_position(j)
+                        box = test_sudoku[i_start_pos: i_start_pos +
+                                          3, j_start_pos: j_start_pos + 3]
+                        if check_all_conditions(row, column, box, possible_value):
+                            possible_values.append(possible_value)
+                    if len(possible_values) == 1:
+                        # fake[i, j] = possible_values[0]
+                        test_sudoku[i, j] = possible_values[0]
+                    else:
+                        loop = True
+
+        # print(fake)
+        print(test_sudoku)
