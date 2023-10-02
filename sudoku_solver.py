@@ -1,4 +1,4 @@
-""""""
+"""A sudoku solver to double check that the sodokus we create are valid"""
 
 import numpy as np
 
@@ -36,33 +36,41 @@ def get_position(x: int) -> int:
     return (x // 3) * 3
 
 
-if __name__ == "__main__":
-    fake = np.empty((9, 9))
-    "for every 1-9, check every row"
-    loop = True
-    while loop:
-        loop = False
-        # print(test_sudoku)
-        print(fake)
-        print()
-        for i in range(9):
-            for j in range(9):
-                possible_values = []
-                if test_sudoku[i, j] == "x":
-                    for possible_value in range(1, 10):
-                        row = test_sudoku[i, :]
-                        column = test_sudoku[:, j]
-                        i_start_pos = get_position(i)
-                        j_start_pos = get_position(j)
-                        box = test_sudoku[i_start_pos: i_start_pos +
-                                          3, j_start_pos: j_start_pos + 3]
-                        if check_all_conditions(row, column, box, possible_value):
-                            possible_values.append(possible_value)
-                    if len(possible_values) == 1:
-                        # fake[i, j] = possible_values[0]
-                        test_sudoku[i, j] = possible_values[0]
-                    else:
-                        loop = True
+def go_through_sudoku(sudoku: np.array) -> np.array:
+    """
+    Runs through the sudoku and
+    enters any valid numbers for that run through
+    """
+    for i in range(9):
+        for j in range(9):
+            possible_values = []
+            if sudoku[i, j] == "x":
+                for possible_value in range(1, 10):
+                    row = sudoku[i, :]
+                    column = sudoku[:, j]
+                    i_start_pos = get_position(i)
+                    j_start_pos = get_position(j)
+                    box = sudoku[i_start_pos: i_start_pos +
+                                 3, j_start_pos: j_start_pos + 3]
+                    if check_all_conditions(row, column, box, possible_value):
+                        possible_values.append(possible_value)
+                if len(possible_values) == 1:
+                    sudoku[i, j] = possible_values[0]
+    print(sudoku)
+    return sudoku
 
-        # print(fake)
-        print(test_sudoku)
+
+def solve_sudoku(sudoku: np.array) -> bool:
+    is_not_complete = True
+    while is_not_complete:
+        sudoku_copy = sudoku.copy()
+        sudoku = go_through_sudoku(sudoku)
+        if sudoku.all() == sudoku_copy.all():
+            return False
+        if 'x' not in sudoku:
+            return True
+    return False
+
+
+if __name__ == "__main__":
+    print(solve_sudoku(test_sudoku))
