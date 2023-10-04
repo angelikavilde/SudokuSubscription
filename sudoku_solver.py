@@ -1,4 +1,4 @@
-"""A sudoku solver to double check that the sodokus we create are valid"""
+"""A sudoku solver to double check that the sudokus we create are valid"""
 
 import numpy as np
 
