@@ -2,7 +2,6 @@
 
 import numpy as np
 
-
 test_sudoku = np.array([["x", "x", 4, "x", 5, "x", "x", "x", "x"],
                         [9, "x", "x", 7, 3, 4, 6, "x", "x"],
                         ["x", "x", 3, "x", 2, 1, "x", 4, 9],
@@ -63,9 +62,12 @@ def go_through_sudoku(sudoku: np.array) -> np.array:
 def solve_sudoku(sudoku: np.array) -> bool:
     is_not_complete = True
     while is_not_complete:
-        sudoku_copy = sudoku.copy()
+        sudoku_pre_count = np.count_nonzero(sudoku == 'x')
+        print(sudoku_pre_count)
         sudoku = go_through_sudoku(sudoku)
-        if sudoku.all() == sudoku_copy.all():
+        sudoku_after_count = np.count_nonzero(sudoku == 'x')
+        print(sudoku_after_count)
+        if sudoku_pre_count == sudoku_after_count:
             return False
         if 'x' not in sudoku:
             return True
