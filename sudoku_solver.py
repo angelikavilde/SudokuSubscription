@@ -10,20 +10,20 @@ test_sudoku = np.array([["x", "x", 4, "x", 5, "x", "x", "x", "x"],
                         ["x", 7, 6, "x", 1, "x", 9, 2, "x"],
                         [3, 1, "x", 9, 7, "x", 2, "x", "x"],
                         ["x", "x", 9, 1, 8, 2, "x", "x", 3],
-                        ["x", "x", "x", "x", 6, "x", 1, "x", "x"]], dtype='object')
+                        ["x", "x", "x", "x", 6, "x", 1, "x", "x"]], dtype="object")
 
 
-def check_box(box: np.array, value: int) -> bool:
+def check_box(box: np.ndarray, value: int) -> bool:
     """Checks that the value is available for that three by three box"""
     return all(value not in row for row in box)  # TODO verify
 
 
-def check_line(line: np.array, value: int) -> bool:
+def check_line(line: np.ndarray, value: int) -> bool:
     """Checks that the value is available for that row/column"""
     return not value in line
 
 
-def check_all_conditions(row: np.array, column: np.array, box: np.array, value: int) -> bool:
+def check_all_conditions(row: np.ndarray, column: np.ndarray, box: np.ndarray, value: int) -> bool:
     """Checks that all 3 checks are valid"""
     return all([check_line(row, value),
                 check_line(column, value),
@@ -35,43 +35,53 @@ def get_position(x: int) -> int:
     return (x // 3) * 3
 
 
-def go_through_sudoku(sudoku: np.array) -> np.array:
+def go_through_sudoku(sudoku: np.ndarray) -> np.ndarray:
     """
     Runs through the sudoku and
     enters any valid numbers for that run through
     """
     for i in range(9):
         for j in range(9):
-            possible_values = []
-            if sudoku[i, j] == "x":
-                for possible_value in range(1, 10):
+            possible_values = set()
+            if isinstance(sudoku[i, j], str):
+                if len(sudoku[i, j]) > 1:
+                    values_to_check = {int(n) for n in sudoku[i, j][1:]}
+                else:
+                    values_to_check = range(1, 10)
+                for possible_value in values_to_check:
                     row = sudoku[i, :]
                     column = sudoku[:, j]
                     i_start_pos = get_position(i)
                     j_start_pos = get_position(j)
-                    box = sudoku[i_start_pos: i_start_pos +
-                                 3, j_start_pos: j_start_pos + 3]
+                    box = sudoku[i_start_pos: i_start_pos + 3,
+                                j_start_pos: j_start_pos + 3]
                     if check_all_conditions(row, column, box, possible_value):
-                        possible_values.append(possible_value)
+                        possible_values.add(str(possible_value))
                 if len(possible_values) == 1:
-                    sudoku[i, j] = possible_values[0]
-    print(sudoku)
+                    sudoku[i, j] = int(possible_values.pop())
+                else:
+                    sudoku[i, j] = "x" + "".join(possible_values)
     return sudoku
 
 
-def solve_sudoku(sudoku: np.array) -> bool:
-    is_not_complete = True
-    while is_not_complete:
-        sudoku_pre_count = np.count_nonzero(sudoku == 'x')
-        print(sudoku_pre_count)
+def count_x(sudoku: np.ndarray) -> int:
+    """Returns the count of "x" in numpy matrix"""
+    flat_array = sudoku.flatten()
+    unfilled_count_by_arr = np.char.count(flat_array.astype(str), "x")
+    return sum(unfilled_count_by_arr)
+
+
+def solve_sudoku(sudoku: np.ndarray) -> bool:
+    """Returns true/false whether sudoku can be solved"""
+    unfilled_count_after: int = True
+    while unfilled_count_after:
+        unfilled_count_before = count_x(sudoku)
         sudoku = go_through_sudoku(sudoku)
-        sudoku_after_count = np.count_nonzero(sudoku == 'x')
-        print(sudoku_after_count)
-        if sudoku_pre_count == sudoku_after_count:
-            return False
-        if 'x' not in sudoku:
-            return True
-    return False
+        unfilled_count_after = count_x(sudoku)
+        if unfilled_count_before == unfilled_count_after: #! TODO: Could we assume that 
+            # there could be a case where this will break? DISCUSSION 
+            break
+    return not unfilled_count_after
 
 
 if __name__ == "__main__":
