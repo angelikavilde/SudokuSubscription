@@ -1,4 +1,4 @@
-"""A sudoku solver to double check that the sodokus we create are valid"""
+"""A sudoku solver to double check that the sudokus we create are valid"""
 
 import numpy as np
 
@@ -15,7 +15,7 @@ test_sudoku = np.array([["x", "x", 4, "x", 5, "x", "x", "x", "x"],
 
 def check_box(box: np.ndarray, value: int) -> bool:
     """Checks that the value is available for that three by three box"""
-    return all(value not in row for row in box)  # TODO verify
+    return all(value not in row for row in box)
 
 
 def check_line(line: np.ndarray, value: int) -> bool:
