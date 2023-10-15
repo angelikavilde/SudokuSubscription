@@ -2,16 +2,6 @@
 
 import numpy as np
 
-test_sudoku = np.array([["x", "x", 4, "x", 5, "x", "x", "x", "x"],
-                        [9, "x", "x", 7, 3, 4, 6, "x", "x"],
-                        ["x", "x", 3, "x", 2, 1, "x", 4, 9],
-                        ["x", 3, 5, "x", 9, "x", 4, 8, "x"],
-                        ["x", 9, "x", "x", "x", "x", "x", 3, "x"],
-                        ["x", 7, 6, "x", 1, "x", 9, 2, "x"],
-                        [3, 1, "x", 9, 7, "x", 2, "x", "x"],
-                        ["x", "x", 9, 1, 8, 2, "x", "x", 3],
-                        ["x", "x", "x", "x", 6, "x", 1, "x", "x"]], dtype="object")
-
 
 def check_box(box: np.ndarray, value: int) -> bool:
     """Checks that the value is available for that three by three box"""
@@ -54,7 +44,7 @@ def go_through_sudoku(sudoku: np.ndarray) -> np.ndarray:
                     i_start_pos = get_position(i)
                     j_start_pos = get_position(j)
                     box = sudoku[i_start_pos: i_start_pos + 3,
-                                j_start_pos: j_start_pos + 3]
+                                 j_start_pos: j_start_pos + 3]
                     if check_all_conditions(row, column, box, possible_value):
                         possible_values.add(str(possible_value))
                 if len(possible_values) == 1:
@@ -78,11 +68,20 @@ def solve_sudoku(sudoku: np.ndarray) -> bool:
         unfilled_count_before = count_x(sudoku)
         sudoku = go_through_sudoku(sudoku)
         unfilled_count_after = count_x(sudoku)
-        if unfilled_count_before == unfilled_count_after: #! TODO: Could we assume that 
-            # there could be a case where this will break? DISCUSSION 
+        if unfilled_count_before == unfilled_count_after:  # ! TODO: Could we assume that
+            # there could be a case where this will break? DISCUSSION
             break
     return not unfilled_count_after
 
 
 if __name__ == "__main__":
+    test_sudoku = np.array([["x", "x", 4, "x", 5, "x", "x", "x", "x"],
+                            [9, "x", "x", 7, 3, 4, 6, "x", "x"],
+                            ["x", "x", 3, "x", 2, 1, "x", 4, 9],
+                            ["x", 3, 5, "x", 9, "x", 4, 8, "x"],
+                            ["x", 9, "x", "x", "x", "x", "x", 3, "x"],
+                            ["x", 7, 6, "x", 1, "x", 9, 2, "x"],
+                            [3, 1, "x", 9, 7, "x", 2, "x", "x"],
+                            ["x", "x", 9, 1, 8, 2, "x", "x", 3],
+                            ["x", "x", "x", "x", 6, "x", 1, "x", "x"]], dtype="object")
     print(solve_sudoku(test_sudoku))
