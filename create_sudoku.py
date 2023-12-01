@@ -65,7 +65,6 @@ if __name__ == "__main__":
     sudoku = np.full((9, 9), 'x', dtype='object')
     a = list(i for i in range(1,10))
     b = list(i for i in range(0,9))
-    sudoku[3,:] = "t"
     print(sudoku)
     # c = b.copy()
     random.shuffle(a); random.shuffle(b)
@@ -76,7 +75,7 @@ if __name__ == "__main__":
     # x|x|x
     step_count = 0
     box_start_positions = [(0,0), (0,3), (3,0), (3,3), (0,6), (6,0), (6,6), (6,3), (3,6)]
-    for i in b:
+    for i in a:
         # i is the value we place -- no need to change
         for j in b:
             # every j is the new box we place it in
@@ -84,27 +83,31 @@ if __name__ == "__main__":
             j_start_pos = box_start_positions[j][1]
             box = sudoku[i_start_pos: i_start_pos + 3,
                      j_start_pos: j_start_pos + 3]
-            cells_attempted_within_box = 0
+            value_added_this_box = False
             for k in a:
                 column_n = (k % 3) - 1 + (i_start_pos // 3)
                 # k%3 is column n within box, -1 is for index start, box start pos//3
                 # is to add column n value if the box is not in 1st region
-                column = sudoku[:, column_n]
                 row_n = (k % 3) - 1 + (i_start_pos // 3)
-                row = sudoku[row_n, :]
-                cells_attempted_within_box += 1
                 cell = sudoku[row_n, column_n]
-                # for time improvement only attempt non x cells + that would alter
-                # cells_attempted_within_box count dependency to re-do the step
+                row = sudoku[row_n, :]
+                column = sudoku[:, column_n]
+
                 if cell == "x":
+                    # for time improvement only attempt non x cells + that would alter
+                    # cells_attempted_within_box count dependency to re-do the step
                     continue
-                random_coordinate_within_box = ()
-                if check_all_conditions(row, column, box, value):
-                    sudoku[i, j] = value
+
+                if check_all_conditions(row, column, box, i):
+                    sudoku[row_n, column_n] = i
                     step_count += 1
-                    step_record[f"step{step_count}": {f"{value}": (i, j)}]
+                    step_record[f"step{step_count}"] = {f"{i}" : (row_n, column_n)}
+                    step_record["latest_step"] = step_count
+                    value_added_this_box = True
                     break
-            if cells_attempted_within_box == 9:
-                backtrack_last_step() #should remove last step from storage and add new one
+
+            if not value_added_this_box:
+                # this means one of the previous steps has gone wrong
+                backtrack_last_step()
 
     
