@@ -61,53 +61,72 @@ from sudoku_solver import check_all_conditions, get_position, count_x, solve_sud
 # (8, 0), (8, 1), (8, 2)
 
 
-if __name__ == "__main__":
+def backtrack_last_step(sudoku_grid: np.ndarray, step_record: dict, do_not_try_dict: dict):
+    """"""
+    last_coordinate = step_record["coordinates"][-1]
+    last_value = step_record["values"][-1]
+    step_record["coordinates"].pop()
+    step_record["values"].pop()
+    sudoku_grid[last_coordinate[0],last_coordinate[1]] = "x"
+    do_not_try_dict["values"].append(last_value)
+    do_not_try_dict["coordinates"].append(last_coordinate)
+    return sudoku_grid, step_record, do_not_try_dict, last_value
+
+def create_sudoku():
+    """"""
     sudoku = np.full((9, 9), 'x', dtype='object')
     a = list(i for i in range(1,10))
     b = list(i for i in range(0,9))
-    print(sudoku)
-    # c = b.copy()
+
     random.shuffle(a); random.shuffle(b)
     step_record = {}
-    backtracked = {"step": [], "coordinate_failed": []}
-    # x|x|x
-    # x|x|x
-    # x|x|x
-    step_count = 0
+    step_record["values"] = []
+    step_record["coordinates"] = []
+
+    failed_placements_dict = {}
+    failed_placements_dict["values"] = []
+    failed_placements_dict["coordinates"] = []
     box_start_positions = [(0,0), (0,3), (3,0), (3,3), (0,6), (6,0), (6,6), (6,3), (3,6)]
+
     for i in a:
-        # i is the value we place -- no need to change
+    # i is the value we place -- no need to change
         for j in b:
             # every j is the new box we place it in
             i_start_pos = box_start_positions[j][0]
             j_start_pos = box_start_positions[j][1]
             box = sudoku[i_start_pos: i_start_pos + 3,
-                     j_start_pos: j_start_pos + 3]
+                        j_start_pos: j_start_pos + 3]
             value_added_this_box = False
-            for k in a:
-                column_n = (k % 3) - 1 + (i_start_pos // 3)
-                # k%3 is column n within box, -1 is for index start, box start pos//3
-                # is to add column n value if the box is not in 1st region
-                row_n = (k % 3) - 1 + (i_start_pos // 3)
-                cell = sudoku[row_n, column_n]
-                row = sudoku[row_n, :]
-                column = sudoku[:, column_n]
-
-                if cell == "x":
-                    # for time improvement only attempt non x cells + that would alter
-                    # cells_attempted_within_box count dependency to re-do the step
-                    continue
-
-                if check_all_conditions(row, column, box, i):
-                    sudoku[row_n, column_n] = i
-                    step_count += 1
-                    step_record[f"step{step_count}"] = {f"{i}" : (row_n, column_n)}
-                    step_record["latest_step"] = step_count
-                    value_added_this_box = True
-                    break
+            value_added_this_box, sudoku, step_record = \
+                fill_box(a, step_record, sudoku, i_start_pos, j_start_pos, box, i)
 
             if not value_added_this_box:
                 # this means one of the previous steps has gone wrong
-                backtrack_last_step()
+                sudoku, step_record, failed_placements_dict, re_try_val = \
+                backtrack_last_step(sudoku, step_record, failed_placements_dict)
 
-    
+def fill_box(a, step_record, sudoku, i_start_pos, j_start_pos, box, value):
+    for k in a:
+        column_n = (k % 3) - 1 + (i_start_pos // 3)
+        # k%3 is column n within box, -1 is for index start, box start pos//3
+        # is to add column n value if the box is not in 1st region
+        row_n = (k % 3) - 1 + (j_start_pos // 3)
+        cell = sudoku[row_n, column_n]
+        row = sudoku[row_n, :]
+        column = sudoku[:, column_n]
+
+        if cell == "x":
+            # for time improvement only attempt non x cells + that would alter
+            # cells_attempted_within_box count dependency to re-do the step
+            continue
+
+        if check_all_conditions(row, column, box, value):
+            sudoku[row_n, column_n] = value
+            step_record["values"].append(value)
+            step_record["coordinates"].append((row_n, column_n))
+            value_added_this_box = True
+            break
+    return value_added_this_box, sudoku, step_record
+
+if __name__ == "__main__":
+    create_sudoku()
