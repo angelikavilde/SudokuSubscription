@@ -68,9 +68,11 @@ def backtrack_last_step(sudoku_grid: np.ndarray, step_record: dict, do_not_try_d
     step_record["coordinates"].pop()
     step_record["values"].pop()
     sudoku_grid[last_coordinate[0],last_coordinate[1]] = "x"
-    do_not_try_dict["values"].append(last_value)
-    do_not_try_dict["coordinates"].append(last_coordinate)
-    return sudoku_grid, step_record, do_not_try_dict, last_value
+    if do_not_try_dict[str(last_coordinate)]:
+        do_not_try_dict[str(last_coordinate)].append(last_value)
+    else:
+        do_not_try_dict[str(last_coordinate)] = [last_value]
+    return sudoku_grid, step_record, do_not_try_dict, last_value, last_coordinate
 
 def create_sudoku():
     """"""
@@ -78,34 +80,24 @@ def create_sudoku():
     a = list(i for i in range(1,10))
     b = list(i for i in range(0,9))
 
-    random.shuffle(a); random.shuffle(b)
+    # random.shuffle(a); random.shuffle(b)
     step_record = {}
     step_record["values"] = []
     step_record["coordinates"] = []
 
-    failed_placements_dict = {}
-    failed_placements_dict["values"] = []
-    failed_placements_dict["coordinates"] = []
     box_start_positions = [(0,0), (0,3), (3,0), (3,3), (0,6), (6,0), (6,6), (6,3), (3,6)]
+    failed_placements_dict = {}
 
     for i in a:
-    # i is the value we place -- no need to change
+    # i is the value we place
         for j in b:
             # every j is the new box we place it in
             i_start_pos = box_start_positions[j][0]
             j_start_pos = box_start_positions[j][1]
-            box = sudoku[i_start_pos: i_start_pos + 3,
-                        j_start_pos: j_start_pos + 3]
-            value_added_this_box = False
-            value_added_this_box, sudoku, step_record = \
-                fill_box(a, step_record, sudoku, i_start_pos, j_start_pos, box, i)
+            box_info_and_fill(j_start_pos, a, i_start_pos, failed_placements_dict, step_record, sudoku)
 
-            if not value_added_this_box:
-                # this means one of the previous steps has gone wrong
-                sudoku, step_record, failed_placements_dict, re_try_val = \
-                backtrack_last_step(sudoku, step_record, failed_placements_dict)
-
-def fill_box(a, step_record, sudoku, i_start_pos, j_start_pos, box, value):
+def fill_box(step_record, sudoku, i_start_pos, j_start_pos, box, value):
+    a = 
     for k in a:
         column_n = (k % 3) - 1 + (i_start_pos // 3)
         # k%3 is column n within box, -1 is for index start, box start pos//3
@@ -127,6 +119,24 @@ def fill_box(a, step_record, sudoku, i_start_pos, j_start_pos, box, value):
             value_added_this_box = True
             break
     return value_added_this_box, sudoku, step_record
+
+
+def box_info_and_fill(j_start_pos, i_start_pos, failed_placements_dict, step_record, sudoku):
+    # j is box number
+    # i is value adding
+    a = list(i for i in range(1,10))
+    box = sudoku[i_start_pos: i_start_pos + 3,
+                j_start_pos: j_start_pos + 3]
+    value_added_this_box = False
+    value_added_this_box, sudoku, step_record = \
+        fill_box(a, step_record, sudoku, i_start_pos, j_start_pos, box, i)
+    if not value_added_this_box:
+        # this means one of the previous steps has gone wrong
+        sudoku, step_record, failed_placements_dict, re_try_val, last_failed_coord = \
+        backtrack_last_step(sudoku, step_record, failed_placements_dict)
+        i_start_pos = get_position(last_failed_coord[0])
+        j_start_pos = get_position(last_failed_coord[1])
+        box_info_and_fill()
 
 if __name__ == "__main__":
     create_sudoku()
