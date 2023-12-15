@@ -24,17 +24,37 @@ def log_and_remove_error():
     fill_the_grid()
 
 
-def fill_the_grid(column: int, row: int, value: int, previous_fails: dict, success_coords: dict):
-    #repeated step 2:
-    coords = (column, row)
-
-    # finds every matched coords in fails:
+def check_if_already_failed_coords(coords: tuple, value: int, previous_fails: dict) -> bool:
     coord_failed = {indx for indx, fail 
             in enumerate(previous_fails["coordinates"]) if coords == fail}
     values_coord_failed_for = {previous_fails["values"][indx] for indx in coord_failed}
+    return value not in values_coord_failed_for
 
+
+def find_cell_coords(box_n: int, cell: int) -> tuple:
+    box_row = (box_n - 1) // 3
+    box_col = (box_n - 1) % 3
+    x = (cell - 1) % 3 + box_col * 3
+    y = (cell - 1) // 3 + box_row * 3
+    return x, y
+
+
+def get_sudoku_partial_arrays(sudoku, column_n: int, row_n: int) -> tuple:
+    row = sudoku[column_n, :]
+    column = sudoku[:, row_n]
+    i_start_pos = get_position(column_n)
+    j_start_pos = get_position(row_n)
+    box = sudoku[i_start_pos: i_start_pos + 3,
+                    j_start_pos: j_start_pos + 3]
+    return row, column, box
+
+
+def fill_the_grid(box_n: int, cell: int, value: int, previous_fails: dict, success_coords: dict):
+    #repeated step 2:
+    coords = find_cell_coords(box_n, cell)
+    row, column, box = get_sudoku_partial_arrays(sudoku, coords[0], coords[1])
     # does step 2
-    if check_all_conditions(row, column, box, value) and value not in values_coord_failed_for:
+    if check_all_conditions(row, column, box, value) and check_if_already_failed_coords(coords, value, previous_fails):
         sudoku[coords] = value
     
         # save success coords
@@ -66,11 +86,7 @@ if __name__ == "__main__":
     success_coords = {"coordinates": [], "values": []}
     previous_fails = {"coordinates": [], "values": []}
 
-    for i in range(1,10):
+    for i in range(1, 10):
         j = 1 #box numb
         k = 1 #cell numb
-        sudoku = fill_the_grid()
-
-    # #repeated step 1:
-    # j = 1 #box numb
-    # k = 1 #cell numb
+        sudoku = fill_the_grid(j, k, i, previous_fails, success_coords)
