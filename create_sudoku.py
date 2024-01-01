@@ -1,5 +1,4 @@
 import numpy as np
-import random
 from sudoku_solver import check_all_conditions, get_position, count_x, solve_sudoku
 
 
@@ -18,10 +17,25 @@ def log_and_remove_error():
     success_coords["values"].pop()
 
     k = 1
-    j = "last used in coords above j" #TODO calculate which box it is
+    j = find_box_and_cell(last_invalid_coords[0], last_invalid_coords[1])
     i = last_invalid_value
     # go to step 2
     fill_the_grid()
+
+
+def find_box_and_cell(row, column) -> int:
+    # Determine the box number
+    box_x = row // 3 + 1
+    box_y = column // 3 + 1
+    
+    box_number = (box_x - 1) * 3 + box_y
+    
+    # Determine the cell number within the box
+    # cell_x = row % 3
+    # cell_y = column % 3
+    # cell_number_within_box = cell_x * 3 + cell_y + 1
+    
+    return box_number#, cell_number_within_box
 
 
 def check_if_already_failed_coords(coords: tuple, value: int, previous_fails: dict) -> bool:
@@ -60,9 +74,10 @@ def fill_the_grid(box_n: int, cell: int, value: int, previous_fails: dict, succe
         # save success coords
         success_coords["coordinates"].append(coords)
         success_coords["coordinates"].append(value)
-        if j != 9:
-            j += 1
+        if box_n != 9:
+            box_n += 1
             # go to step 2 with new j and same k
+            fill_the_grid(box_n, cell, value, previous_fails, success_coords)
         else:
             if value != 9:
                 value += 1
@@ -71,9 +86,10 @@ def fill_the_grid(box_n: int, cell: int, value: int, previous_fails: dict, succe
                 # FINISH
                 print(sudoku)
     else:
-        if k != 9:
-            k += 1
+        if cell != 9:
+            cell += 1
             # repeat step 2 with new k and same j
+            fill_the_grid(box_n, cell, value, previous_fails, success_coords)
         else:
             log_and_remove_error()
 
