@@ -1,11 +1,15 @@
+""""""
+
 import numpy as np
+
 from sudoku_solver import check_all_conditions, get_position, count_x, solve_sudoku
 
 
-def log_and_remove_error(success_coords: dict, previous_fails: dict) -> None:
+def log_and_remove_error(success_coords: dict, previous_fails: dict):
     # something went wrong (red oval on diagram)
 
     # removing last logged success
+    print(previous_fails)
     last_invalid_coords = success_coords["coordinates"].pop()
     last_invalid_value = success_coords["values"].pop()
 
@@ -15,14 +19,16 @@ def log_and_remove_error(success_coords: dict, previous_fails: dict) -> None:
 
     # replace wrong coordinate back with x
     sudoku[last_invalid_coords[0], last_invalid_coords[1]] = 'x'
+    # print(sudoku)
 
     cell = 1
     box_n = find_box_and_cell(last_invalid_coords[0], last_invalid_coords[1])
     value = last_invalid_value
     # go to step 2
     # print("here",box_n, cell, value, previous_fails, success_coords)
-    print(sudoku)
-    fill_the_grid(box_n, cell, value, previous_fails, success_coords)
+    # print(cell)
+    # fill_the_grid(box_n, cell, value, previous_fails, success_coords)
+    return value, box_n, cell, previous_fails, success_coords
 
 
 def find_box_and_cell(row, column) -> int:
@@ -42,9 +48,9 @@ def find_box_and_cell(row, column) -> int:
 
 def check_if_already_failed_coords(coords: tuple, value: int, previous_fails: dict) -> bool: #!Change name to more approp
     """Returns True if value is NOT in previously failed coordinates"""
-    coord_failed = {indx for indx, fail 
+    coord_failed_for_indexes = {indx for indx, fail 
             in enumerate(previous_fails["coordinates"]) if coords == fail}
-    values_coord_failed_for = {previous_fails["values"][indx] for indx in coord_failed}
+    values_coord_failed_for = {previous_fails["values"][indx] for indx in coord_failed_for_indexes}
     return value not in values_coord_failed_for
 
 
@@ -57,8 +63,13 @@ def find_cell_coords(box_n: int, cell: int) -> tuple:
 
 
 def get_sudoku_partial_arrays(sudoku, row_n: int, column_n: int) -> tuple:
-    row = sudoku[column_n, :]
-    column = sudoku[:, row_n]
+    row = sudoku[row_n, :]
+    column = sudoku[:, column_n]
+    # if (row_n, column_n) == (1,6):
+    #     print("coords: ", row_n,column_n)
+    #     print(sudoku)
+    #     print(f"column: {column}")
+    #     print(f"row: {row}")
     i_start_pos = get_position(column_n)
     j_start_pos = get_position(row_n)
     box = sudoku[i_start_pos: i_start_pos + 3,
@@ -69,7 +80,7 @@ def get_sudoku_partial_arrays(sudoku, row_n: int, column_n: int) -> tuple:
 def fill_the_grid(box_n: int, cell: int, value: int, previous_fails: dict, success_coords: dict):
     """"""
     coords = find_cell_coords(box_n, cell)
-    print(f"coords: {coords}")
+    # print(f"coords: {coords}", previous_fails)
     row, column, box = get_sudoku_partial_arrays(sudoku, coords[0], coords[1])
     # does step 2
     if check_all_conditions(row, column, box, value) and check_if_already_failed_coords(coords, value, previous_fails):
@@ -78,30 +89,33 @@ def fill_the_grid(box_n: int, cell: int, value: int, previous_fails: dict, succe
         # save success coords
         success_coords["coordinates"].append(coords)
         success_coords["values"].append(value)
+
         if box_n != 9:
             box_n += 1
             cell = 1
             # repeat the step with next box and first cell of that box
-            fill_the_grid(box_n, cell, value, previous_fails, success_coords)
+            return value, box_n, cell, previous_fails, success_coords
         else:
             if value != 9:
                 value += 1
+                box_n = 1
+                cell = 1
                 # returns sudoku and then it does the next value with first box and first cell
-                return sudoku, value
+                return value, box_n, cell, previous_fails, success_coords
             else:
                 # FINISH
-                return sudoku
+                value += 1
+                return value, box_n, cell, previous_fails, success_coords
     else:
         if cell != 9:
             cell += 1
             # repeat this step with new cell value and same box
-            fill_the_grid(box_n, cell, value, previous_fails, success_coords)
+            return value, box_n, cell, previous_fails, success_coords
         else:
             # print(box_n, cell, value, previous_fails, success_coords)
-            log_and_remove_error(success_coords, previous_fails)
+            return log_and_remove_error(success_coords, previous_fails)
 
 
-#! PSEUDOCODE BELOW
 if __name__ == "__main__":
     sudoku = np.full((9, 9), 'x', dtype='object')
     # start
@@ -111,8 +125,11 @@ if __name__ == "__main__":
     previous_fails = {"coordinates": [], "values": []}
 
     value = 1
-    while value != 10:
-        j = 1 #box numb
-        k = 1 #cell numb
-        sudoku, value = fill_the_grid(j, k, value, previous_fails, success_coords)
-    print(sudoku)
+    j = 1
+    k = 1
+    try:
+        while value != 10:
+            value, j, k, previous_fails, success_coords = fill_the_grid(j, k, value, previous_fails, success_coords)
+    except Exception as e:
+        print(e)
+        print(sudoku)
