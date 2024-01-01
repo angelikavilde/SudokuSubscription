@@ -9,7 +9,6 @@ def log_and_remove_error(success_coords: dict, previous_fails: dict):
     # something went wrong (red oval on diagram)
 
     # removing last logged success
-    print(previous_fails)
     last_invalid_coords = success_coords["coordinates"].pop()
     last_invalid_value = success_coords["values"].pop()
 
@@ -24,7 +23,6 @@ def log_and_remove_error(success_coords: dict, previous_fails: dict):
     cell = 1
     box_n = find_box_and_cell(last_invalid_coords[0], last_invalid_coords[1])
     value = last_invalid_value
-    # go to step 2
     # print("here",box_n, cell, value, previous_fails, success_coords)
     # print(cell)
     # fill_the_grid(box_n, cell, value, previous_fails, success_coords)
@@ -70,8 +68,8 @@ def get_sudoku_partial_arrays(sudoku, row_n: int, column_n: int) -> tuple:
     #     print(sudoku)
     #     print(f"column: {column}")
     #     print(f"row: {row}")
-    i_start_pos = get_position(column_n)
-    j_start_pos = get_position(row_n)
+    i_start_pos = get_position(row_n)
+    j_start_pos = get_position(column_n)
     box = sudoku[i_start_pos: i_start_pos + 3,
                     j_start_pos: j_start_pos + 3]
     return row, column, box
@@ -82,6 +80,9 @@ def fill_the_grid(box_n: int, cell: int, value: int, previous_fails: dict, succe
     coords = find_cell_coords(box_n, cell)
     # print(f"coords: {coords}", previous_fails)
     row, column, box = get_sudoku_partial_arrays(sudoku, coords[0], coords[1])
+    if box_n == 4 and cell == 2:
+        print(coords)
+        print(f"row:{row}, column: {column}, box: {box}")
     # does step 2
     if check_all_conditions(row, column, box, value) and check_if_already_failed_coords(coords, value, previous_fails):
         sudoku[coords] = value
@@ -130,6 +131,12 @@ if __name__ == "__main__":
     try:
         while value != 10:
             value, j, k, previous_fails, success_coords = fill_the_grid(j, k, value, previous_fails, success_coords)
+            if j > 7:
+                print(f"box: {j}, cell: {k}")
+                print("FULL sudoku: ", sudoku)
+                print(previous_fails, success_coords)
+            if j == 9:
+                break
     except Exception as e:
         print(e)
-        print(sudoku)
+        # print(sudoku)
