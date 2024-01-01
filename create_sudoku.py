@@ -1,11 +1,12 @@
-""""""
+"""File to create a fully filled sudoku grid"""
 
 import numpy as np
 
-from sudoku_solver import check_all_conditions, get_position, count_x, solve_sudoku
+from sudoku_solver import check_all_conditions, get_position
 
 
 def log_and_remove_error(success_coords: dict, previous_fails: dict):
+    """Logs and removesa the error coordinate and the value to later change"""
     # something went wrong (red oval on diagram)
 
     # removing last logged success
@@ -30,29 +31,31 @@ def log_and_remove_error(success_coords: dict, previous_fails: dict):
 
 
 def find_box_and_cell(row, column) -> int:
+    """Finds the box and the cell number of the provided coords"""
     # Determine the box number
     box_x = row // 3 + 1
     box_y = column // 3 + 1
-    
+
     box_number = (box_x - 1) * 3 + box_y
-    
+
     # Determine the cell number within the box
     # cell_x = row % 3
     # cell_y = column % 3
     # cell_number_within_box = cell_x * 3 + cell_y + 1
-    
+
     return box_number#, cell_number_within_box
 
 
 def check_if_already_failed_coords(coords: tuple, value: int, previous_fails: dict) -> bool: #!Change name to more approp
     """Returns True if value is NOT in previously failed coordinates"""
-    coord_failed_for_indexes = {indx for indx, fail 
+    coord_failed_for_indexes = {indx for indx, fail
             in enumerate(previous_fails["coordinates"]) if coords == fail}
     values_coord_failed_for = {previous_fails["values"][indx] for indx in coord_failed_for_indexes}
     return value not in values_coord_failed_for
 
 
 def find_cell_coords(box_n: int, cell: int) -> tuple:
+    """Returns the coordinates of the cell provided with cell n in the box n"""
     box_row = (box_n - 1) // 3
     box_col = (box_n - 1) % 3
     column = (cell - 1) % 3 + box_col * 3
@@ -60,7 +63,8 @@ def find_cell_coords(box_n: int, cell: int) -> tuple:
     return row, column
 
 
-def get_sudoku_partial_arrays(sudoku, row_n: int, column_n: int) -> tuple:
+def get_sudoku_partial_arrays(row_n: int, column_n: int) -> tuple:
+    """Returns row, column and box of the sudoku"""
     row = sudoku[row_n, :]
     column = sudoku[:, column_n]
     # if (row_n, column_n) == (1,6):
@@ -76,15 +80,15 @@ def get_sudoku_partial_arrays(sudoku, row_n: int, column_n: int) -> tuple:
 
 #repeated step 2:
 def fill_the_grid(box_n: int, cell: int, value: int, previous_fails: dict, success_coords: dict):
-    """"""
+    """TODO"""
     coords = find_cell_coords(box_n, cell)
     # print(f"coords: {coords}", previous_fails)
-    row, column, box = get_sudoku_partial_arrays(sudoku, coords[0], coords[1])
+    row, column, box = get_sudoku_partial_arrays(coords[0], coords[1])
     # print(f"row:{row}, column: {column}, box: {box}")
     # does step 2
     if check_all_conditions(row, column, box, value) and check_if_already_failed_coords(coords, value, previous_fails) and sudoku[coords] == 'x':
         sudoku[coords] = value
-    
+
         # save success coords
         success_coords["coordinates"].append(coords)
         success_coords["values"].append(value)
@@ -135,6 +139,6 @@ if __name__ == "__main__":
                 print(previous_fails, success_coords)
             if len(previous_fails["coordinates"]) == 3:
                 break
-    except Exception as e:
+    except (ValueError, TypeError, IndexError) as e:
         print(e)
     print(sudoku)
