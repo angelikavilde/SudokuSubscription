@@ -78,6 +78,10 @@ def get_sudoku_partial_arrays(sudoku, row_n: int, column_n: int) -> tuple:
 def fill_the_grid(box_n: int, cell: int, value: int, previous_fails: dict, success_coords: dict):
     """"""
     coords = find_cell_coords(box_n, cell)
+    if sudoku[coords] != 'x':
+        cell += 1
+        # repeat this step with new cell value and same box
+        return value, box_n, cell, previous_fails, success_coords
     # print(f"coords: {coords}", previous_fails)
     row, column, box = get_sudoku_partial_arrays(sudoku, coords[0], coords[1])
     if box_n == 4 and cell == 2:
@@ -131,11 +135,11 @@ if __name__ == "__main__":
     try:
         while value != 10:
             value, j, k, previous_fails, success_coords = fill_the_grid(j, k, value, previous_fails, success_coords)
-            if j > 7:
+            if value == 2:
                 print(f"box: {j}, cell: {k}")
                 print("FULL sudoku: ", sudoku)
                 print(previous_fails, success_coords)
-            if j == 9:
+            if value == 2 and j == 2:
                 break
     except Exception as e:
         print(e)
